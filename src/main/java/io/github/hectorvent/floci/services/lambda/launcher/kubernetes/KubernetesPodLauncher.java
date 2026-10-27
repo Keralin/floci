@@ -191,6 +191,14 @@ public class KubernetesPodLauncher implements LambdaRuntimeLauncher {
             env.add("AWS_LAMBDA_FUNCTION_TIMEOUT=" + fn.getTimeout());
             env.add("AWS_LAMBDA_LOG_GROUP_NAME=" + cwLogGroup);
             env.add("AWS_LAMBDA_LOG_STREAM_NAME=" + cwLogStream);
+            // LoggingConfig: the runtime interface clients read these to pick the log format and the
+            // application log level, so without them a JSON function still logs text.
+            if (fn.getLogFormat() != null) {
+                env.add("AWS_LAMBDA_LOG_FORMAT=" + fn.getLogFormat());
+            }
+            if (fn.applicationLogLevelOrDefault() != null) {
+                env.add("AWS_LAMBDA_LOG_LEVEL=" + fn.applicationLogLevelOrDefault());
+            }
             if (fn.getHandler() != null && !fn.getHandler().isBlank()) {
                 env.add("_HANDLER=" + fn.getHandler());
             }
