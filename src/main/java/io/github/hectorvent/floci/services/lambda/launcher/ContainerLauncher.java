@@ -246,25 +246,7 @@ public class ContainerLauncher implements LambdaRuntimeLauncher {
         String lambdaRegion = extractRegionFromArn(fn.getFunctionArn(), config.defaultRegion());
         String lambdaAccountId = AwsArnUtils.accountOrDefault(fn.getFunctionArn(), config.defaultAccountId());
 
-        // Build env vars
-        List<String> env = new ArrayList<>();
-        env.add("AWS_LAMBDA_RUNTIME_API=" + runtimeApiEndpoint);
-        env.add("AWS_LAMBDA_FUNCTION_NAME=" + fn.getFunctionName());
-        env.add("AWS_LAMBDA_FUNCTION_MEMORY_SIZE=" + fn.getMemorySize());
-        env.add("AWS_LAMBDA_FUNCTION_TIMEOUT=" + fn.getTimeout());
-        env.add("AWS_LAMBDA_LOG_GROUP_NAME=" + cwLogGroup);
-        env.add("AWS_LAMBDA_LOG_STREAM_NAME=" + cwLogStream);
-        // LoggingConfig: the runtime interface clients read these to pick the log format and the
-        // application log level, so without them a JSON function still logs text.
-        if (fn.getLogFormat() != null) {
-            env.add("AWS_LAMBDA_LOG_FORMAT=" + fn.getLogFormat());
-        }
-        if (fn.applicationLogLevelOrDefault() != null) {
-            env.add("AWS_LAMBDA_LOG_LEVEL=" + fn.applicationLogLevelOrDefault());
-        }
-        if (fn.getHandler() != null && !fn.getHandler().isBlank()) {
-            env.add("_HANDLER=" + fn.getHandler());
-        }
+        List<String> env = LambdaRuntimeEnv.of(fn, runtimeApiEndpoint, cwLogGroup, cwLogStream);
         // Region, credentials and the Floci endpoint the SDK should target: the same baseline
         // Floci gives every launched container. When the host ~/.aws is mounted (awsConfigPath),
         // the SDK discovers credentials from /opt/aws-config instead of injected credentials.
